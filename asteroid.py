@@ -1,7 +1,7 @@
 import pygame
 import random
 from circleshape import CircleShape
-from constants import LINE_WIDTH, ASTEROID_MIN_RADIUS
+from constants import LINE_WIDTH, ASTEROID_MIN_RADIUS, SCREEN_HEIGHT, SCREEN_WIDTH, ASTEROID_MAX_RADIUS
 from logger import log_event
 
 class Asteroid(CircleShape):
@@ -18,8 +18,16 @@ class Asteroid(CircleShape):
         points = []
         for offset in self.offsets:
             points.append(self.position + offset)
-        pygame.draw.polygon(screen, "white", points, 2)
+        pygame.draw.polygon(screen, "white", points, LINE_WIDTH)
     def update(self, dt):
+        if self.position.y > (SCREEN_HEIGHT+ASTEROID_MAX_RADIUS):
+            self.position.y = -ASTEROID_MAX_RADIUS
+        if self.position.y < -ASTEROID_MAX_RADIUS:
+            self.position.y = (SCREEN_HEIGHT + ASTEROID_MAX_RADIUS)
+        if self.position.x > (SCREEN_WIDTH+ASTEROID_MAX_RADIUS):
+            self.position.x = -ASTEROID_MAX_RADIUS
+        if self.position.x < -ASTEROID_MAX_RADIUS:
+            self.position.x = (SCREEN_WIDTH + ASTEROID_MAX_RADIUS)
         self.position += (self.velocity * dt)
     def split(self):
         self.kill()
@@ -35,7 +43,3 @@ class Asteroid(CircleShape):
         small_asteroid2 = Asteroid(self.position.x, self.position.y, new_radius)
         small_asteroid1.velocity = vector1 * 1.2
         small_asteroid2.velocity = vector2 * 1.2
-
-
-
-        
