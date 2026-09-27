@@ -9,6 +9,7 @@ from asteroidfield import AsteroidField
 from logger import log_event
 from circleshape import CircleShape
 from shot import Shot
+from gameover import game_over_screen, game_over_text
 
 
 def main():
@@ -28,6 +29,7 @@ def main():
     Shot.containers = (shots, drawable, updatable)
     asteroidfield1 = AsteroidField()
     player1 = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+    game_over = False
     score = 0
     while True:
         log_state()
@@ -35,14 +37,12 @@ def main():
             if event.type == pygame.QUIT:
                 return
         screen.fill("black")
-        updatable.update(dt)
         for players in drawable:
             players.draw(screen)
         for asteroid in asteroids:
             if player1.collides_with(asteroid):
+                game_over = True
                 log_event("player_hit")
-                print("Game Over!")
-                sys.exit()
         for asteroid in asteroids:
             for shot in shots:
                 if shot.collides_with(asteroid):
@@ -50,6 +50,11 @@ def main():
                     asteroid.split()
                     shot.kill()
                     score += 100
+        if game_over == True:
+            screen.blit(game_over_screen, (0,0))
+            screen.blit(game_over_text,(520,SCREEN_HEIGHT/2))
+        if game_over == False:
+            updatable.update(dt)
         score_surface = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(score_surface, (10,10))
         pygame.display.flip()
