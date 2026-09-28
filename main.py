@@ -55,7 +55,6 @@ def main():
             screen.blit(game_over_text,(520,SCREEN_HEIGHT/2))
         if game_over == False:
             updatable.update(dt)
-            print(shots)
         score_surface = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(score_surface, (10,10))
         pygame.display.flip()
