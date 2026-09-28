@@ -40,21 +40,22 @@ def main():
         for players in drawable:
             players.draw(screen)
         for asteroid in asteroids:
-            if player1.collides_with(asteroid):
-                game_over = True
-                log_event("player_hit")
-        for asteroid in asteroids:
             for shot in shots:
                 if shot.collides_with(asteroid):
                     log_event("asteroid_shot")
                     asteroid.split()
                     shot.kill()
                     score += 100
+        for asteroid in asteroids:
+            if player1.collides_with(asteroid):
+                game_over = True
+                log_event("player_hit")
         if game_over == True:
             screen.blit(game_over_screen, (0,0))
             screen.blit(game_over_text,(520,SCREEN_HEIGHT/2))
         if game_over == False:
             updatable.update(dt)
+            print(shots)
         score_surface = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(score_surface, (10,10))
         pygame.display.flip()
