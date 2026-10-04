@@ -1,11 +1,13 @@
 import pygame
+import random
 import sys
-from constants import SCREEN_HEIGHT
+from constants import SCREEN_HEIGHT, BUFF_RADIUS
 from constants import SCREEN_WIDTH
 from logger import log_state
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
+from buffs import Buff
 from logger import log_event
 from circleshape import CircleShape
 from shot import Shot
@@ -23,14 +25,18 @@ def main():
     drawable = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
     shots = pygame.sprite.Group()
+    buffs = pygame.sprite.Group()
     Player.containers = (updatable, drawable)
     Asteroid.containers = (asteroids, updatable, drawable)
     AsteroidField.containers = (updatable)
     Shot.containers = (shots, drawable, updatable)
+    Buff.containers = (buffs, drawable, updatable)
     asteroidfield1 = AsteroidField()
     player1 = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
     game_over = False
     score = 0
+    breaks = 0
+    break_limit = random.uniform(1,2)
     while True:
         log_state()
         for event in pygame.event.get():
@@ -42,6 +48,7 @@ def main():
                     asteroids.empty()
                     shots.empty()
                     updatable.empty()
+                    buffs.empty()
                     score = 0
                     player1 = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
                     asteroidfield1 = AsteroidField()
@@ -49,6 +56,8 @@ def main():
         screen.fill("black")
         for players in drawable:
             players.draw(screen)
+        for buff in buffs:
+            buff.draw(screen)
         for asteroid in asteroids:
             for shot in shots:
                 if shot.collides_with(asteroid):
@@ -56,6 +65,17 @@ def main():
                     asteroid.split()
                     shot.kill()
                     score += 100
+                    breaks += 1
+                    print(breaks)
+                    if breaks >= break_limit:
+                        buff1 = Buff(asteroid.position.x, asteroid.position.y, BUFF_RADIUS)
+                        breaks = 0
+                        break_limit = random.uniform(5,7)
+        for buff in buffs:
+            if player1.collides_with(buff):
+                buff.kill()
+                player1.shot_cooldown = 0.1
+                player1.buff_cooldown = 5
         for asteroid in asteroids:
             if player1.collides_with(asteroid):
                 game_over = True
