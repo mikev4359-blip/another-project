@@ -8,7 +8,8 @@ class Player(CircleShape):
         super().__init__(x, y, PLAYER_RADIUS)
         self.shot_cooldown = PLAYER_SHOOT_COOLDOWN_SECONDS
         self.rotation = 0
-        self.buff_cooldown = 0
+        self.rf_buff_cooldown = 0
+        self.ms_buff_cooldown = 0
         self.cooldown = PLAYER_SHOOT_COOLDOWN_SECONDS
     def triangle(self) -> list[pygame.Vector2]:
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -23,8 +24,9 @@ class Player(CircleShape):
         self.rotation += PLAYER_TURN_SPEED * dt
     def update(self, dt: float) -> None:
         self.cooldown -= dt
-        self.buff_cooldown -= dt
-        if self.buff_cooldown <= 0:
+        self.rf_buff_cooldown -= dt
+        self.ms_buff_cooldown -= dt
+        if self.rf_buff_cooldown <= 0:
             self.shot_cooldown = 0.3
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
@@ -37,7 +39,6 @@ class Player(CircleShape):
             self.move(-dt)
         if keys[pygame.K_SPACE]:
             self.shoot()
-            print(f"shotCD: {self.cooldown}")
     def move(self, dt: float) -> None:
         unit_vector = pygame.Vector2(0, 1)
         rotated_vector = unit_vector.rotate(self.rotation)
@@ -49,4 +50,6 @@ class Player(CircleShape):
         self.cooldown = self.shot_cooldown
         new_shot = Shot(self.position.x, self.position.y)
         new_shot.velocity = (pygame.Vector2(0, 1).rotate(self.rotation)) * PLAYER_SHOOT_SPEED
+        if self.ms_buff_cooldown > 0:
+            new_shot.radius = 200
 

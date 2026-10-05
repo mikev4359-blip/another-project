@@ -7,7 +7,7 @@ from logger import log_state
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
-from buffs import Buff
+from buffs import Buff, listed_buffs
 from logger import log_event
 from circleshape import CircleShape
 from shot import Shot
@@ -36,7 +36,8 @@ def main():
     game_over = False
     score = 0
     breaks = 0
-    break_limit = random.uniform(1,2)
+    buff_spawn_timer = 0
+    break_limit = random.uniform(12,20)
     while True:
         log_state()
         for event in pygame.event.get():
@@ -54,10 +55,10 @@ def main():
                     asteroidfield1 = AsteroidField()
                     game_over = False
         screen.fill("black")
-        for players in drawable:
-            players.draw(screen)
-        for buff in buffs:
-            buff.draw(screen)
+        buff_spawn_timer += dt
+        print(buff_spawn_timer)
+        for sprite in drawable:
+            sprite.draw(screen)
         for asteroid in asteroids:
             for shot in shots:
                 if shot.collides_with(asteroid):
@@ -66,16 +67,15 @@ def main():
                     shot.kill()
                     score += 100
                     breaks += 1
-                    print(breaks)
-                    if breaks >= break_limit:
-                        buff1 = Buff(asteroid.position.x, asteroid.position.y, BUFF_RADIUS)
+                    if breaks >= break_limit and buff_spawn_timer > 15:
+                        random_buff = random.choice(listed_buffs)
+                        spawn_buff1 = random_buff(asteroid.position.x, asteroid.position.y)
                         breaks = 0
-                        break_limit = random.uniform(5,7)
+                        break_limit = random.uniform(12,20)
+                        buff_spawn_timer = 0
         for buff in buffs:
             if player1.collides_with(buff):
-                buff.kill()
-                player1.shot_cooldown = 0.1
-                player1.buff_cooldown = 5
+                buff.apply(player1)
         for asteroid in asteroids:
             if player1.collides_with(asteroid):
                 game_over = True
