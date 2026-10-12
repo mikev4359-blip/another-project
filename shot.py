@@ -6,11 +6,20 @@ from constants import LINE_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH
 class Shot(CircleShape):
     def __init__(self, x, y):
         super().__init__(x, y, SHOT_RADIUS)
+        self.shot_health = 1
+        
     def draw(self, screen):
         pygame.draw.circle(screen, "white", self.position, self.radius, LINE_WIDTH)
+
     def update(self, dt):
         if self.position.x < 0 or self.position.x > SCREEN_WIDTH:
             self.kill()
         if self.position.y < 0 or self.position.y > SCREEN_HEIGHT:
             self.kill()
         self.position += (self.velocity * dt)
+
+    def hit(self):
+        self.shot_health -= 1
+        print(self.shot_health)
+        if self.shot_health <= 0:
+            self.kill()

@@ -1,7 +1,8 @@
 from circleshape import CircleShape
+from shockwave import ShockCircle
 import pygame
 import random
-from constants import PLAYER_SHOOT_SPEED, PLAYER_SHOOT_COOLDOWN_SECONDS, LINE_WIDTH, BUFF_RADIUS
+from constants import LINE_WIDTH, BUFF_RADIUS
 
 class Buff(CircleShape):
     def __init__(self, x: float, y: float) -> None:
@@ -29,5 +30,15 @@ class MegaShot(Buff):
         self.kill()
         player.ms_buff_cooldown = 7
 
-listed_buffs = [RapidFire, MegaShot]
+class Shockwave(Buff):
+    def draw(self, screen):
+        pygame.draw.circle(screen, "yellow", self.position, self.radius,LINE_WIDTH)
+    def update(self, dt):
+        self.radius = BUFF_RADIUS * random.uniform(.9, 1.1)
+    def apply(self, player):
+        self.kill()
+        new_shockwave = ShockCircle(self.position.x, self.position.y)
+
+
+listed_buffs = [MegaShot, RapidFire, Shockwave]
 

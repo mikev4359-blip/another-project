@@ -1,16 +1,15 @@
 import pygame
 import random
-import sys
-from constants import SCREEN_HEIGHT, BUFF_RADIUS
-from constants import SCREEN_WIDTH
+from constants import SCREEN_HEIGHT, BUFF_BREAK_SPAWN_COUNT_MIN, BUFF_BREAK_SPAWN_COUNT_MAX
+from constants import BUFF_SPAWN_TIMER_MIN, SCREEN_WIDTH, BASE_SCORE_ADD, PLAYER_COLLIDE_FUDGE_FACTOR
 from logger import log_state
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from buffs import Buff, listed_buffs
 from logger import log_event
-from circleshape import CircleShape
 from shot import Shot
+from shockwave import ShockCircle
 from gameover import game_over_screen, game_over_text, game_over_text_rect
 
 
@@ -26,18 +25,20 @@ def main():
     asteroids = pygame.sprite.Group()
     shots = pygame.sprite.Group()
     buffs = pygame.sprite.Group()
+    shockcircles = pygame.sprite.Group()
     Player.containers = (updatable, drawable)
     Asteroid.containers = (asteroids, updatable, drawable)
     AsteroidField.containers = (updatable)
     Shot.containers = (shots, drawable, updatable)
     Buff.containers = (buffs, drawable, updatable)
+    ShockCircle.containers = (shockcircles, drawable, updatable)
     asteroidfield1 = AsteroidField()
     player1 = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
     game_over = False
     score = 0
     breaks = 0
     buff_spawn_timer = 0
-    break_limit = random.uniform(12,20)
+    break_limit = random.uniform(BUFF_BREAK_SPAWN_COUNT_MIN,BUFF_BREAK_SPAWN_COUNT_MAX)
     while True:
         log_state()
         for event in pygame.event.get():
@@ -45,18 +46,25 @@ def main():
                 return
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER) and game_over == True:
+                    #Empty Drawable Parameters -----------
                     drawable.empty()
                     asteroids.empty()
                     shots.empty()
                     updatable.empty()
                     buffs.empty()
+                    shockcircles.empty()
+                    #Empty Score Parameters --------------
                     score = 0
                     player1 = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+                    #Reset Asteroid Field
                     asteroidfield1 = AsteroidField()
+                    #Empty Buff Parameters ---------------
+                    breaks = 0
+                    break_limit = random.uniform(BUFF_BREAK_SPAWN_COUNT_MIN, BUFF_BREAK_SPAWN_COUNT_MAX)
+                    buff_spawn_timer = 0
                     game_over = False
         screen.fill("black")
         buff_spawn_timer += dt
-        print(buff_spawn_timer)
         for sprite in drawable:
             sprite.draw(screen)
         for asteroid in asteroids:
@@ -64,20 +72,25 @@ def main():
                 if shot.collides_with(asteroid):
                     log_event("asteroid_shot")
                     asteroid.split()
-                    shot.kill()
-                    score += 100
+                    shot.hit()
+                    score += BASE_SCORE_ADD
                     breaks += 1
-                    if breaks >= break_limit and buff_spawn_timer > 15:
+                    if breaks >= break_limit and buff_spawn_timer > BUFF_SPAWN_TIMER_MIN:
                         random_buff = random.choice(listed_buffs)
                         spawn_buff1 = random_buff(asteroid.position.x, asteroid.position.y)
                         breaks = 0
-                        break_limit = random.uniform(12,20)
+                        break_limit = random.uniform(BUFF_BREAK_SPAWN_COUNT_MIN,BUFF_BREAK_SPAWN_COUNT_MAX)
                         buff_spawn_timer = 0
         for buff in buffs:
             if player1.collides_with(buff):
                 buff.apply(player1)
         for asteroid in asteroids:
-            if player1.collides_with(asteroid):
+            for shock in shockcircles:
+                if shock.collides_with(asteroid):
+                    asteroid.split()
+                    score += BASE_SCORE_ADD
+        for asteroid in asteroids:
+            if player1.collides_with(asteroid,PLAYER_COLLIDE_FUDGE_FACTOR):
                 game_over = True
                 log_event("player_hit")
         if game_over == True:
