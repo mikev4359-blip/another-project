@@ -1,4 +1,10 @@
 import pygame
+pygame.mixer.quit()
+pygame.mixer.pre_init(frequency=48000, size=-16, channels=2, buffer=512)
+pygame.mixer.init()
+pygame.init()
+actual_freq, actual_size, actual_chan = pygame.mixer.get_init()
+print(f"--- SYSTEM AUDIO OPENED AT: {actual_freq} Hz ---")
 import random
 from constants import SCREEN_HEIGHT, BUFF_BREAK_SPAWN_COUNT_MIN, BUFF_BREAK_SPAWN_COUNT_MAX
 from constants import BUFF_SPAWN_TIMER_MIN, SCREEN_WIDTH, BASE_SCORE_ADD, PLAYER_COLLIDE_FUDGE_FACTOR
@@ -14,7 +20,6 @@ from gameover import game_over_screen, game_over_text, game_over_text_rect
 
 
 def main():
-    pygame.init()
     clock = pygame.time.Clock()
     dt = 0.0
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -39,6 +44,7 @@ def main():
     breaks = 0
     buff_spawn_timer = 0
     break_limit = random.uniform(BUFF_BREAK_SPAWN_COUNT_MIN,BUFF_BREAK_SPAWN_COUNT_MAX)
+    death_explosion = pygame.mixer.Sound("sounds/boom.wav")
     while True:
         log_state()
         for event in pygame.event.get():
@@ -90,9 +96,11 @@ def main():
                     asteroid.split()
                     score += BASE_SCORE_ADD
         for asteroid in asteroids:
-            if player1.collides_with(asteroid,PLAYER_COLLIDE_FUDGE_FACTOR):
+            if not game_over and player1.collides_with(asteroid,PLAYER_COLLIDE_FUDGE_FACTOR):
                 game_over = True
+                death_explosion.play()
                 log_event("player_hit")
+                break
         if game_over == True:
             screen.blit(game_over_screen, (0,0))
             screen.blit(game_over_text,game_over_text_rect)
