@@ -12,17 +12,22 @@ class Player(CircleShape):
         self.rf_buff_cooldown = 0
         self.ms_buff_cooldown = 0
         self.cooldown = PLAYER_SHOOT_COOLDOWN_SECONDS
+        self.image = pygame.transform.flip(pygame.image.load("assets/starfighter.png").convert_alpha(),False,True)
 
-    def triangle(self) -> list[pygame.Vector2]:
-        forward = pygame.Vector2(0, 1).rotate(self.rotation)
-        right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
-        a = self.position + forward * self.radius
-        b = self.position - forward * self.radius - right
-        c = self.position - forward * self.radius + right
-        return [a, b, c]
+    #def triangle(self) -> list[pygame.Vector2]:
+    #    forward = pygame.Vector2(0, 1).rotate(self.rotation)
+    #    right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
+    #    a = self.position + forward * self.radius
+    #    b = self.position - forward * self.radius - right
+    #    c = self.position - forward * self.radius + right
+    #    return [a, b, c]
     
     def draw(self, screen) -> None:
-        pygame.draw.polygon(screen, "white", self.triangle(), LINE_WIDTH)
+        self.rotated = pygame.transform.rotate(self.image, -self.rotation)
+        self.rect = self.rotated.get_rect()
+        self.rect.center = (self.position.x, self.position.y)
+        screen.blit(self.rotated, self.rect)
+    #    pygame.draw.polygon(screen, "white", self.triangle(), LINE_WIDTH)
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
@@ -55,8 +60,10 @@ class Player(CircleShape):
         if self.cooldown > 0:
             return
         self.cooldown = self.shot_cooldown
-        new_shot = Shot(self.position.x, self.position.y)
-        new_shot.velocity = (pygame.Vector2(0, 1).rotate(self.rotation)) * PLAYER_SHOOT_SPEED
+        forward_angle = (pygame.Vector2(0, 1).rotate(self.rotation))
+        spawn_point = self.position + forward_angle * (self.radius)
+        new_shot = Shot(spawn_point.x, spawn_point.y)
+        new_shot.velocity = forward_angle * PLAYER_SHOOT_SPEED
         if self.ms_buff_cooldown > 0:
             new_shot.radius = 80
             new_shot.shot_health = 5

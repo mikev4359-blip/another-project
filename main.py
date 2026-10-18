@@ -3,8 +3,7 @@ pygame.mixer.quit()
 pygame.mixer.pre_init(frequency=48000, size=-16, channels=2, buffer=512)
 pygame.mixer.init()
 pygame.init()
-actual_freq, actual_size, actual_chan = pygame.mixer.get_init()
-print(f"--- SYSTEM AUDIO OPENED AT: {actual_freq} Hz ---")
+pygame.mixer.music.load("sounds/bkg1.ogg")
 import random
 from constants import SCREEN_HEIGHT, BUFF_BREAK_SPAWN_COUNT_MIN, BUFF_BREAK_SPAWN_COUNT_MAX
 from constants import BUFF_SPAWN_TIMER_MIN, SCREEN_WIDTH, BASE_SCORE_ADD, PLAYER_COLLIDE_FUDGE_FACTOR
@@ -45,6 +44,7 @@ def main():
     buff_spawn_timer = 0
     break_limit = random.uniform(BUFF_BREAK_SPAWN_COUNT_MIN,BUFF_BREAK_SPAWN_COUNT_MAX)
     death_explosion = pygame.mixer.Sound("sounds/boom.wav")
+    pygame.mixer.music.play(-1,0.0,3000)
     while True:
         log_state()
         for event in pygame.event.get():
@@ -52,19 +52,19 @@ def main():
                 return
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER) and game_over == True:
-                    #Empty Drawable Parameters -----------
+                    # Empty Drawable Parameters -----------
                     drawable.empty()
                     asteroids.empty()
                     shots.empty()
                     updatable.empty()
                     buffs.empty()
                     shockcircles.empty()
-                    #Empty Score Parameters --------------
+                    # Empty Score Parameters --------------
                     score = 0
                     player1 = Player(SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
-                    #Reset Asteroid Field
+                    # Reset Asteroid Field
                     asteroidfield1 = AsteroidField()
-                    #Empty Buff Parameters ---------------
+                    # Empty Buff Parameters ---------------
                     breaks = 0
                     break_limit = random.uniform(BUFF_BREAK_SPAWN_COUNT_MIN, BUFF_BREAK_SPAWN_COUNT_MAX)
                     buff_spawn_timer = 0
